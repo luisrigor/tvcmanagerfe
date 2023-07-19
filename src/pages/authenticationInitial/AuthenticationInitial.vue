@@ -15,7 +15,7 @@ const initiateAuthentication = async () => {
     }
     const urlActual = window.location
     const cookie = urlActual.hostname.includes('lexus') ? COOKIE_NAME_LEXUS : COOKIE_NAME_TOYOTA
-    const brand = cookie === COOKIE_NAME_LEXUS ? 'toyota' : 'lexus'
+    const brand = cookie === COOKIE_NAME_LEXUS ? 'lexus' : 'toyota'
     const root = document.documentElement;
     if (brand === 'toyota') {
         console.log('is toyota')
@@ -44,10 +44,7 @@ const initiateAuthentication = async () => {
     }
     try {
         const response = await AuthenticationInitialApi.login(token)
-        console.log('responseresponse', response.token)
-        console.log('accessToken-1->', HttpService.accessToken)
         HttpService.accessToken = response.token
-        console.log('accessToken-2->', HttpService.accessToken)
         // const profile = await AuthApi.getAuthentication(currentCookie)
         // this.store.commit.SET_AUTHENTICATION({
         //     user: profile,

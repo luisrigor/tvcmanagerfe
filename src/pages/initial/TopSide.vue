@@ -1,11 +1,20 @@
 <script setup lang="ts">
-import { reactive } from 'vue';
+import { reactive, onMounted } from 'vue';
 
-import RightSide from 'src/pages/initial/RightSide.vue'
+import LowerSide from 'src/pages/initial/LowerSide.vue';
+
+import { storeToRefs } from 'pinia';
+import { useDataOptions } from '../../shared/store/modules/data-options';
+
 interface Props {
   initialOptionSelected: string;
 }
 const props = defineProps<Props>();
+
+const dataOptions = useDataOptions();
+const { dataOptionsStore, userAsing } = storeToRefs( dataOptions );
+const { asingListDealer, generateDataSelect } = dataOptions;
+
 const dataInitialPage = reactive({
   optionSideForecast: {
     dealer: {
@@ -19,7 +28,7 @@ const dataInitialPage = reactive({
     annual: {
       title: 'Relatório da previsão anual',
       name: 'annual',
-    }
+    },
   },
   optionSideReporting: {
     reporting: {
@@ -29,7 +38,7 @@ const dataInitialPage = reactive({
     reports: {
       title: 'Consulta de relatórios',
       name: 'reports',
-    }
+    },
   },
   splitterModel: 28,
   tabLeftInitial: 'op1',
@@ -37,39 +46,28 @@ const dataInitialPage = reactive({
 </script>
 <template>
   <q-card>
-    <div>
-      <q-splitter v-model="dataInitialPage.splitterModel"  disable  >
-        <template v-slot:before >
-          <q-tabs
-            v-model="dataInitialPage.tabLeftInitial"
-            vertical
-            class="text-red"
-            
-          >
-          <q-tab v-for="option in (props.initialOptionSelected == 'previsao' ? dataInitialPage.optionSideForecast :dataInitialPage.optionSideReporting )" :key="option.name"
+    <q-card-section>
+      <div>
+        <!-- el valor de dataOptionsStore en store es ->{{ dataOptionsStore.dataSelect }}
+        el valor de userAsing en store es ->{{ userAsing }} -->
+          <q-tabs v-model="dataInitialPage.tabLeftInitial" align="left" class="bg-white shadow-2">
+            <q-tab
+              v-for="option in props.initialOptionSelected == 'previsao'
+                ? dataInitialPage.optionSideForecast
+                : dataInitialPage.optionSideReporting"
+              :key="option.name"
               :name="option.name"
               :label="option.title"
             ></q-tab>
           </q-tabs>
-        </template>
-
-        <template v-slot:after>
-          <q-tab-panels
-            v-model="dataInitialPage.tabLeftInitial"
-            animated
-            swipeable
-            vertical
-            transition-prev="jump-up"
-            transition-next="jump-up"
-          >
+          <q-tab-panels class="q-ma-xs" v-model="dataInitialPage.tabLeftInitial" >
             <q-tab-panel :name="dataInitialPage.tabLeftInitial">
-              <right-side
+              <lower-side
                 :leftOption="dataInitialPage.tabLeftInitial"
-              ></right-side>
+              ></lower-side>
             </q-tab-panel>
           </q-tab-panels>
-        </template>
-      </q-splitter>
-    </div>
+      </div>
+    </q-card-section>
   </q-card>
 </template>

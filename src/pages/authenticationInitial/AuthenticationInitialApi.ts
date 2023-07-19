@@ -5,7 +5,6 @@ import { AuthenticationModel, AuthenticationSendModel } from './interfaces/Authe
 // http://localhost:8083/mk-services/sign-in/13
 class AuthenticationInitialApi {
 	public login = (data: AuthenticationSendModel['loginToken']): Promise<AuthenticationModel> => {
-		console.log('loginnn', data)
 		const url = 'sign-in/' + localStorage.getItem('Current')
 		const headers = {
 			'Content-Type': 'application/json',

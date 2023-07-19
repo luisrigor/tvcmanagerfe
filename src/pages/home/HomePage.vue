@@ -45,7 +45,7 @@ const dataHomePage = reactive({
               </q-tab-panel>
             </q-tab-panels>
   
-            <div v-if="dataHomePage.tabInitial === 'op1'">
+            <div v-if="dataHomePage.tabInitial === 'op1'" style="color:var(--brand-secondary)">
               {{ dataHomePage.initialMessage }}
             </div>
           </div>
