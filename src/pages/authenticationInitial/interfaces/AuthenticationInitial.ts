@@ -4,6 +4,18 @@ export type AuthenticationType = {
     token: string;
 }
 
+export interface ListIndicators {
+    oidNet:           string;
+    oidDealer:        string;
+    year:             number;
+    month:            number;
+    orderColumn:      null;
+    orderOrientation: null;
+    validOpenMonth:   boolean;
+    hstMonths:        null;
+    actualYear:       number;
+    actualMonth:      number;
+}
 export class AuthenticationModel {
     public clientId = '';
     public roles = '';

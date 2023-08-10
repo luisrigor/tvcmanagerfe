@@ -1,8 +1,6 @@
 import HttpService from '../../shared/services/HttpService';
 
-import { AuthenticationModel, AuthenticationSendModel } from './interfaces/AuthenticationInitial';
-
-// http://localhost:8083/mk-services/sign-in/13
+import { AuthenticationModel, AuthenticationSendModel, ListIndicators } from './interfaces/AuthenticationInitial';
 class AuthenticationInitialApi {
 	public login = (data: AuthenticationSendModel['loginToken']): Promise<AuthenticationModel> => {
 		const url = 'sign-in/' + localStorage.getItem('Current')
@@ -12,6 +10,10 @@ class AuthenticationInitialApi {
 		}
 		return HttpService.sing(url, data)
 	};
+	public tvcIndicators = (): Promise<ListIndicators> => {
+        const url = 'tvc-manager/set-indicator-filter-bean'
+        return HttpService.get(url)
+    };
 }
 
 export default new AuthenticationInitialApi();

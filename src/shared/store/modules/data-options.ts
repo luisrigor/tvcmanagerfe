@@ -10,8 +10,7 @@ export const useDataOptions = defineStore('dataOptions', () => {
             years: [],
             months: []
         },
-
-
+        dealers: [],
     })
     const formatterY = new Intl.DateTimeFormat('pt-PT', { year: 'numeric' })
     dataOptionsStore.yearActual = formatterY.format(new Date())

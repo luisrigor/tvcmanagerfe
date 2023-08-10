@@ -1,16 +1,5 @@
-export interface ListMonthlyReport {
-    vecDealers:                VecDealer[];
-    hstUsedCarsPrevisionSales: Hst[];
-    hstAnualPrevision:         Hst[];
-}
 
-export interface Hst {
-    oidDealer:    string;
-    previsionTvc: number;
-    previsionSn:  number;
-}
-
-export interface VecDealer {
+export interface ListDealer {
     ivObjectId:          string;
     ivDesig:             string;
     ivOid_Parent:        string;

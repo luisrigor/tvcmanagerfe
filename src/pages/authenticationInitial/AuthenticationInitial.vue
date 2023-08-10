@@ -1,22 +1,26 @@
-import { onMounted } from 'vue';
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import UtilCookies from '../../shared/utils/Cookies'
+import Messages from '../modalMessages/MessagesPage.vue'
 import { COOKIE_NAME_TOYOTA, COOKIE_NAME_LEXUS } from '../../shared/constants/Global'
-import { LexusTheme, ToyotaTheme } from '../../shared/styles/colors/Colors';
+import { LexusTheme, ToyotaTheme } from '../../shared/styles/colors/Colors'
 import '../../shared/styles/stylesGlobal.css'
-import AuthenticationInitialApi from './AuthenticationInitialApi';
-import HttpService from '../../shared/services/HttpService';
+import AuthenticationInitialApi from './AuthenticationInitialApi'
+import HttpService from '../../shared/services/HttpService'
+
 const initiateAuthentication = async () => {
-    // this.isLoading = true create variable
-    const token = 'tcap1@tpo||eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJsb2dpbl9wb3J0YWwiOiJ0Y2FwMUB0cG8iLCJwd2RfcG9ydGFsIjoidGVzdGU0NTYifQ.FStiuViSMxYNHf1F7zuU7kwLgIfvYDWrU4zuSgRTR0M'
+    const token =
+        'tcap1@tpo||eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJsb2dpbl9wb3J0YWwiOiJ0Y2FwMUB0cG8iLCJwd2RfcG9ydGFsIjoidGVzdGU0NTYifQ.FStiuViSMxYNHf1F7zuU7kwLgIfvYDWrU4zuSgRTR0M'
     if (import.meta.env.MODE === 'development') {
-        const cookie = 'tcap1@tpo||eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJsb2dpbl9wb3J0YWwiOiJ0Y2FwMUB0cG8iLCJwd2RfcG9ydGFsIjoidGVzdGU0NTYifQ.FStiuViSMxYNHf1F7zuU7kwLgIfvYDWrU4zuSgRTR0M'
+        const cookie =
+            'tcap1@tpo||eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJsb2dpbl9wb3J0YWwiOiJ0Y2FwMUB0cG8iLCJwd2RfcG9ydGFsIjoidGVzdGU0NTYifQ.FStiuViSMxYNHf1F7zuU7kwLgIfvYDWrU4zuSgRTR0M'
     }
     const urlActual = window.location
-    const cookie = urlActual.hostname.includes('lexus') ? COOKIE_NAME_LEXUS : COOKIE_NAME_TOYOTA
+    const cookie = urlActual.hostname.includes('lexus')
+        ? COOKIE_NAME_LEXUS
+        : COOKIE_NAME_TOYOTA
     const brand = cookie === COOKIE_NAME_LEXUS ? 'lexus' : 'toyota'
-    const root = document.documentElement;
+    const root = document.documentElement
     if (brand === 'toyota') {
         console.log('is toyota')
         if (root) {
@@ -45,34 +49,24 @@ const initiateAuthentication = async () => {
     try {
         const response = await AuthenticationInitialApi.login(token)
         HttpService.accessToken = response.token
-        // const profile = await AuthApi.getAuthentication(currentCookie)
-        // this.store.commit.SET_AUTHENTICATION({
-        //     user: profile,
-        //     username: currentCookie.split('|')[0]
-        // })
-        // this.hasAuth = true
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const responseInd = await AuthenticationInitialApi.tvcIndicators()
+        const responseIndTemp = ref([])
+        Array.prototype.push.call(responseIndTemp.value, responseInd.oidDealer)
+        Array.prototype.push.call(responseIndTemp.value, responseInd.oidNet)
+        console.log('responseIndTemp', responseIndTemp.value)
+        localStorage.setItem('roles', response.roles)
+        localStorage.setItem('indicators', responseIndTemp.value)
     } catch (e: any) {
-
-        console.log('error->', e)
-        if (!e.statusCode) {
-            // this.errorMessage = ''
-            return
+        if (e.statusCode !== 200) {
+            console.log('error', e.statusCode)
         }
-        // this.errorMessage = e.message
-    } finally {
-        // this.isLoading = false
     }
 }
 onMounted(() => {
     initiateAuthentication()
-}) 
+})
 </script>
 
 <template>
-    <div>
-        <div>
-        </div>
-        <slot></slot>
-    </div>
+    <slot></slot>
 </template>

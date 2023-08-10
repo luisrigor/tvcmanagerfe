@@ -1,15 +1,26 @@
 // app global css in SCSS form
 .background-Primary {
-    background-color: var(--brand-primary)
+  background-color: var(--brand-primary);
 }
 .background-Secondary {
-    background-color: var(--brand-secondary)
+  background-color: var(--brand-secondary);
 }
 .q-tabs {
-    background-color: var(--brand-primary);
-    color: var(--brand-secondary)
+  background-color: var(--brand-primary);
+  color: var(--brand-secondary);
 }
+.q-table thead {
+  background-color: var(--brand-primary);
+  color: var(--brand-secondary);
+  border: 2px solid;
+  border-color: var(--brand-secondary);
+  border-collapse: separate;
+  margin-bottom: 20px !important;
+}
+
 .q-table {
-    background-color: var(--brand-primary);
-    color: var(--brand-secondary)
+  border: 2px solid;
+  border-color: var(--brand-secondary);
+  border-collapse: separate;
+  margin-bottom: 20px !important;
 }
