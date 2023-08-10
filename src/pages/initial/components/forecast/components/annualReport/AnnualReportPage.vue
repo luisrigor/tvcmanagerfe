@@ -15,17 +15,19 @@ const dataAnualReport = reactive({
     search: 'Pesquisa de previsão vendas anual',
     year: 'Ano',
     labelYear: 'Select Ano',
-    buttonExport: 'Exportar relatório'
+    buttonExport: 'Exportar relatório',
+    total: 'TOTAL'
   },
   dataSelectAnualReport: {
     year: '',
+    month: ''
   },
   dataMessages: {
     loading: { isLoading: false }
   },
   dataSendPrevisionSales: {
     year: '',
-    month: 12
+    month: 0
   },
   headerTable: ['Rede TUC', 'Previsão |', 'Cumprimento %'],
   table: {
@@ -37,14 +39,16 @@ const dataAnualReport = reactive({
   dataSendExcel: {
     data: {
       isOnlyYear: true,
-      month: 12,
+      month: 0,
       oidDealer: '',
       year: 0
     }
   },
+  listTotal: []
 });
 const dataResponse = ref([])
 dataAnualReport.dataSelectAnualReport.year = dataOptionsStore.value.yearActual;
+dataAnualReport.dataSelectAnualReport.month = dataOptionsStore.value.monthActual;
 const columnsInitial = [
   { name: 'dealer', align: 'center', label: 'CONCESSÕES', field: 'dealer' },
   { name: 'oTuc', label: 'OBJETIVO TUC', field: 'oTuc' },
@@ -59,6 +63,7 @@ const ListAnnualReport = async () => {
   try {
     dataAnualReport.dataMessages.loading.isLoading = true
     dataAnualReport.dataSendPrevisionSales.year = dataAnualReport.dataSelectAnualReport.year
+    dataAnualReport.dataSendPrevisionSales.month = dataOptionsStore.value.dataSelect.months.indexOf(dataAnualReport.dataSelectAnualReport.month) + 1
     dataAnualReport.responsePrevisionSales = await AnnualReportApi.tvcPrevisionSales(dataAnualReport.dataSendPrevisionSales)
     await updateRows(dataAnualReport.responsePrevisionSales)
     dataAnualReport.dataMessages.loading.isLoading = false
@@ -103,10 +108,31 @@ const updateRows = async (data: object) => {
       }
     }
     if (dataMont.oTuc !== '') {
-      dataMont.tObj = (dataMont.tuc !== '' && dataMont.tuc > 0) ? ((dataMont.tuc * 100) / dataMont.oTuc).toFixed(1) + '%' : ''
-      dataMont.cTcap = (dataMont.tcap !== '' && dataMont.tcap > 0) ? ((dataMont.tcap * 100) / dataMont.tuc).toFixed(1) + '%' : ''
+      dataMont.tObj = (dataMont.tuc !== '' && dataMont.tuc > 0) ? ((dataMont.tuc * 100) / dataMont.oTuc).toFixed(2) + '%' : ''
+      dataMont.cTcap = (dataMont.tcap !== '' && dataMont.tcap > 0) ? ((dataMont.tcap * 100) / dataMont.tuc).toFixed(2) + '%' : ''
     }
     Array.prototype.push.call(dataResponse.value, dataMont)
+  }
+  await listTotal()
+}
+const listTotal = async () => {
+  dataAnualReport.listTotal.length = 0
+  const dataTempTotal = {
+    oTuc: 0,
+    tuc: 0,
+    tcap: 0,
+    tObj: '',
+    cTcap: ''
+  }
+  for (const propertyDR in dataResponse.value) {
+    dataTempTotal.oTuc = dataResponse.value[propertyDR].oTuc !== '' ? dataTempTotal.oTuc + parseInt(dataResponse.value[propertyDR].oTuc, 10) : dataTempTotal.oTuc
+    dataTempTotal.tuc = dataResponse.value[propertyDR].tuc !== '' ? dataTempTotal.tuc + parseInt(dataResponse.value[propertyDR].tuc, 10) : dataTempTotal.tuc
+    dataTempTotal.tcap = dataResponse.value[propertyDR].tcap !== '' ? dataTempTotal.tcap + parseInt(dataResponse.value[propertyDR].tcap, 10) : dataTempTotal.tcap
+  }
+  dataTempTotal.cTcap = dataTempTotal.tcap !== 0 ? ((dataTempTotal.tcap * 100) / dataTempTotal.tuc).toFixed(2) + '%' : ''
+  dataTempTotal.tObj = dataTempTotal.tuc !== 0 ? ((dataTempTotal.tuc * 100) / dataTempTotal.oTuc).toFixed(2) + '%' : ''
+  for (const propertyDT in dataTempTotal) {
+    Array.prototype.push.call(dataAnualReport.listTotal, dataTempTotal[propertyDT])
   }
 }
 const downloadExcelComponent = async () => {
@@ -189,6 +215,17 @@ onMounted(() => {
                 style="border-width: 1px;  border-style: outset;  border-color: var(--brand-primary);  border-collapse: separate;">
                 {{ col.label }}
               </q-th>
+            </template>
+            <template v-slot:bottom-row>
+              <q-tr style="border-width: 1px;  border-style: outset;  border-color: var(--brand-primary);  border-collapse: separate; background-color: var(--brand-primary);
+  color: var(--brand-secondary);">
+                <q-td align="center">
+                  {{ dataAnualReport.titles.total }}
+                </q-td>
+                <q-td v-for="col in dataAnualReport.listTotal" :key="col" align="center">
+                  {{ col }}
+                </q-td>
+              </q-tr>
             </template>
           </q-table>
         </q-card-section>

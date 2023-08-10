@@ -1,14 +1,43 @@
-export interface ListMonthlyReport {
+
+export interface ListPrevisionMonth {
     vecDealers:                VecDealer[];
     hstUsedCarsPrevisionSales: Hst[];
     hstAnualPrevision:         Hst[];
 }
 
 export interface Hst {
-    oidDealer:    string;
-    previsionTvc: number;
-    previsionSn:  number;
+    id:            number;
+    oidDealer:     string;
+    year:          number;
+    month:         number;
+    previsionType: string;
+    status:        string;
+    previsionTvc:  number;
+    previsionSn?:  number;
+    createdBy:     string;
+    dtCreated:     DtC;
+    changedBy?:    string;
+    dtChanged?:    DtC;
 }
+
+export interface DtC {
+    date: DateClass;
+    time: Time;
+}
+
+export interface DateClass {
+    year:  number;
+    month: number;
+    day:   number;
+}
+
+export interface Time {
+    hour:   number;
+    minute: number;
+    second: number;
+    nano:   number;
+}
+
 
 export interface VecDealer {
     ivObjectId:          string;

@@ -1,10 +1,10 @@
 import HttpService from '../../../../../../shared/services/HttpService';
 
-import { ListMonthlyReport } from './interfaces/MonthlyReport';
+import { ListPrevisionMonth } from './interfaces/MonthlyReport';
 
 class MonthlyReportApi {
-    public tvcPrevisionSales = (dataUrl: object): Promise<ListMonthlyReport> => {
-        const url = 'tvc-manager/prevision-month?month=' + dataUrl.month + '&year=' + dataUrl.year
+    public tvcPrevisionSales = (dataUrl: object): Promise<ListPrevisionMonth> => {
+        const url = 'tvc-manager/prevision-month?isMonth=true&month=' + dataUrl.month + '&year=' + dataUrl.year
         return HttpService.get(url)
     };
     public downloadExcel = (data: object): Promise<BlobPart> => {

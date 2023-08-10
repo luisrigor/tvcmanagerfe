@@ -1,12 +1,12 @@
 import HttpService from '../../shared/services/HttpService';
 
-import { ListDealer } from './interfaces/TopSide';
+import { ListDealer } from './interfaces/LowerSide';
 
-class TopSideApi {
+class LowerSideApi {
 	public tvcDealers = (oidDealer: number): Promise<ListDealer> => {
         const url = 'tvc-manager/dealers?oidDealer=' + oidDealer
         return HttpService.get(url)
     };
 }
 
-export default new TopSideApi();
+export default new LowerSideApi();

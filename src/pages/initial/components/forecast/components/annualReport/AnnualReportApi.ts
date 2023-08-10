@@ -4,7 +4,7 @@ import { ListAnnualReport } from './interfaces/AnnualReport';
 
 class AnnualReportApi {
     public tvcPrevisionSales = (dataUrl: object): Promise<ListAnnualReport> => {
-        const url = 'tvc-manager/prevision-month?month=' + dataUrl.month + '&year=' + dataUrl.year
+        const url = 'tvc-manager/prevision-month?isMonth=false&month=' + dataUrl.month + '&year=' + dataUrl.year
         return HttpService.get(url)
     };
     public downloadExcel = (data: object): Promise<BlobPart> => {
