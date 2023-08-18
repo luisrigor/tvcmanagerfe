@@ -80,4 +80,34 @@ export interface VecDealer {
     ivDtCreated:         string;
     ivDtChanged:         string;
 }
+export type PrevisionSalesSendType = {
+    actualMonth: number;
+    actualYear: number;
+    id: number;
+    oidDealer: string;
+    previsionSn: number;
+    previsionTvc: number;
+    status: string;
+}
 
+export class PrevisionSalesSendModel {
+    public actualMonth = 0
+    public actualYear = 0;
+    public id = 0;
+    public oidDealer = '';
+    public previsionSn = 0
+    public previsionTvc = 0;
+    public status = '';
+
+    toModel () {
+        return {
+            actualMonth: this.actualMonth,
+            actualYear: this.actualYear,
+            id: this.id,
+            oidDealer: this.oidDealer,
+            previsionSn: this.previsionSn,
+            previsionTvc: this.previsionTvc,
+            status: this.status
+        };
+    }
+}

@@ -48,12 +48,12 @@ const dataInitialPage = reactive({
   splitterModel: 28,
   tabInitial: 'op1',
   dataMessages: {
-    loading: { isLoading: false }
+    loading: false
   },
 });
 const listDealer = async () => {
   try {
-    dataInitialPage.dataMessages.loading.isLoading = true
+    dataInitialPage.dataMessages.loading = true
     const indicatorsTemp = localStorage.getItem('indicators')
     const indicatorsTempOne = indicatorsTemp.split(',')
     const responseDealers = await LowerSideApi.tvcDealers(indicatorsTempOne[0])
@@ -64,14 +64,14 @@ const listDealer = async () => {
       }
       Array.prototype.push.call(dataOptionsStore.value.dealers, dataDealerTemp)
     }
-    dataInitialPage.dataMessages.loading.isLoading = false
+    dataInitialPage.dataMessages.loading = false
   } catch (e: any) {
-    dataInitialPage.dataMessages.loading.isLoading = false
+    dataInitialPage.dataMessages.loading = false
     if (e.statusCode !== 200) {
       console.log('error', e.statusCode)
     }
   } finally {
-    dataInitialPage.dataMessages.loading.isLoading = false
+    dataInitialPage.dataMessages.loading = false
   }
 }
 onMounted(() => {
@@ -98,7 +98,5 @@ onMounted(() => {
       </div>
     </q-card-section>
   </q-card>
-  <div v-if="dataInitialPage.dataMessages.loading.isLoading">
-    <messages :loading="dataInitialPage.dataMessages.loading"> </messages>
-  </div>
+  <messages :loading="dataInitialPage.dataMessages.loading"> </messages>
 </template>

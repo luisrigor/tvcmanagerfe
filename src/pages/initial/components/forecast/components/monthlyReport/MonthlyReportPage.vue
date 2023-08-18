@@ -18,6 +18,7 @@ const dataMonthlyReport = reactive({
     labelYear: 'Select Ano',
     labelMonth: 'Select Month',
     buttonExport: 'Exportar relatório',
+    openMonth: 'Abrir Mês',
     total: 'TOTAL'
   },
   dataSelectMonthlyReport: {
@@ -30,7 +31,7 @@ const dataMonthlyReport = reactive({
   },
   headerTable: ['Rede TUC', 'Previsão |', 'Cumprimento %'],
   dataMessages: {
-    loading: { isLoading: false }
+    loading: false
   },
   table: {
     pagination: { rowsPerPage: 0 },
@@ -45,7 +46,9 @@ const dataMonthlyReport = reactive({
       year: 0
     }
   },
-  listTotal: []
+  listTotal: [],
+  status: '',
+  selectedInitial: []
 });
 const columnsInitial = [
   { name: 'dealer', align: 'center', label: 'CONCESSÕES', field: 'dealer' },
@@ -59,22 +62,23 @@ dataMonthlyReport.dataSelectMonthlyReport.year = dataOptionsStore.value.yearActu
 dataMonthlyReport.dataSelectMonthlyReport.month = dataOptionsStore.value.monthActual
 const dataResponse = ref([])
 const ListAnnualReport = async () => {
+  dataMonthlyReport.status = ''
   const headerTableTemp = dataMonthlyReport.headerTable[1].split(' ')
   dataMonthlyReport.headerTable[1] = headerTableTemp[0] + ' ' + dataMonthlyReport.dataSelectMonthlyReport.year
   try {
-    dataMonthlyReport.dataMessages.loading.isLoading = true
+    dataMonthlyReport.dataMessages.loading = true
     dataMonthlyReport.dataSendMonthlyReport.year = dataMonthlyReport.dataSelectMonthlyReport.year
     dataMonthlyReport.dataSendMonthlyReport.month = dataOptionsStore.value.dataSelect.months.indexOf(dataMonthlyReport.dataSelectMonthlyReport.month) + 1
     dataMonthlyReport.responsePrevisionSales = await MonthlyReportApi.tvcPrevisionSales(dataMonthlyReport.dataSendMonthlyReport)
     await updateRows(dataMonthlyReport.responsePrevisionSales)
-    dataMonthlyReport.dataMessages.loading.isLoading = false
+    dataMonthlyReport.dataMessages.loading = false
   } catch (e: any) {
-    dataMonthlyReport.dataMessages.loading.isLoading = false
+    dataMonthlyReport.dataMessages.loading = false
     if (e.statusCode !== 200) {
       console.log('error->', e.statusCode)
     }
   } finally {
-    dataMonthlyReport.dataMessages.loading.isLoading = false
+    dataMonthlyReport.dataMessages.loading = false
   }
 }
 const updateRows = async (data: object) => {
@@ -87,7 +91,8 @@ const updateRows = async (data: object) => {
       tuc: '',
       tcap: '',
       tObj: '',
-      cTcap: ''
+      cTcap: '',
+      id: 0
     }
     dataMont.numDealer = data['vecDealers'][propertyVC].ivOid_Parent
     dataMont.dealer = data['vecDealers'][propertyVC].ivDesig
@@ -95,8 +100,18 @@ const updateRows = async (data: object) => {
       for (const propertyUP in data['hstUsedCarsPrevisionSales']) {
 
         if (dataMont.numDealer === data['hstUsedCarsPrevisionSales'][propertyUP].oidDealer && data['hstUsedCarsPrevisionSales'][propertyUP].status === "Fechado") {
+          dataMonthlyReport.status = data['hstUsedCarsPrevisionSales'][propertyUP].status 
+          dataMont.id = data['hstUsedCarsPrevisionSales'][propertyUP].id 
           dataMont.tuc = data['hstUsedCarsPrevisionSales'][propertyUP].previsionTvc !== 0 ? data['hstUsedCarsPrevisionSales'][propertyUP].previsionTvc : ''
           dataMont.tcap = data['hstUsedCarsPrevisionSales'][propertyUP].previsionSn !== 0 ? data['hstUsedCarsPrevisionSales'][propertyUP].previsionSn : ''
+          const obsjectAction = {
+            name: 'action',
+            align: 'center',
+            field: ''
+          }
+          const headerTableAdd = 'Abrir Mês'
+          Array.prototype.push.call(columnsInitial, obsjectAction)
+          Array.prototype.push.call(dataMonthlyReport.headerTable, headerTableAdd)
         }
       }
     }
@@ -123,7 +138,10 @@ const listTotal = async () => {
     tuc: 0,
     tcap: 0,
     tObj: '',
-    cTcap: ''
+    cTcap: '',
+  }
+  if (dataMonthlyReport.status === 'Fechado') {
+    dataTempTotal['add'] = ''
   }
   for (const propertyDR in dataResponse.value) {
     dataTempTotal.oTuc = dataResponse.value[propertyDR].oTuc !== '' ? dataTempTotal.oTuc + parseInt(dataResponse.value[propertyDR].oTuc, 10) : dataTempTotal.oTuc
@@ -131,10 +149,25 @@ const listTotal = async () => {
     dataTempTotal.tcap = dataResponse.value[propertyDR].tcap !== '' ? dataTempTotal.tcap + parseInt(dataResponse.value[propertyDR].tcap, 10) : dataTempTotal.tcap
   }
   dataTempTotal.cTcap = dataTempTotal.tcap !== 0 ? ((dataTempTotal.tcap * 100) / dataTempTotal.tuc).toFixed(2) + '%' : ''
-  dataTempTotal.tObj = dataTempTotal.tuc !== 0 ? ((dataTempTotal.tuc * 100) / dataTempTotal.oTuc).toFixed(2) + '%' : ''
   for (const propertyDT in dataTempTotal) {
     Array.prototype.push.call(dataMonthlyReport.listTotal, dataTempTotal[propertyDT])
   }
+}
+const openMonth = async () => {
+  try {
+    dataMonthlyReport.dataMessages.loading = true
+    await MonthlyReportApi.tvcCloseMonth(dataMonthlyReport.selectedInitial)
+    dataMonthlyReport.dataMessages.loading = false
+  } catch (e: any) {
+    dataMonthlyReport.dataMessages.loading = false
+    if (e.statusCode !== 200) {
+      console.log('error->', e.statusCode)
+    }
+  } finally {
+    dataMonthlyReport.dataMessages.loading = false
+    await ListAnnualReport()
+  }
+  dataMonthlyReport.dataMessages.loading = false
 }
 const downloadExcelComponent = async () => {
   dataMonthlyReport.dataSendExcel.data.year = parseInt(dataMonthlyReport.dataSelectMonthlyReport.year, 10)
@@ -142,7 +175,7 @@ const downloadExcelComponent = async () => {
   const indicatorsTemp = localStorage.getItem('indicators')
   const indicatorsTempOne = indicatorsTemp.split(',')
   dataMonthlyReport.dataSendExcel.data.oidDealer = indicatorsTempOne[1]
-  dataMonthlyReport.dataMessages.loading.isLoading = true
+  dataMonthlyReport.dataMessages.loading = true
   try {
     const res = await MonthlyReportApi.downloadExcel(dataMonthlyReport.dataSendExcel.data)
     const blob = new Blob([res], { type: 'application/octet-stream' })
@@ -155,9 +188,9 @@ const downloadExcelComponent = async () => {
   } catch (e) {
     console.log('error', e)
   } finally {
-    dataMonthlyReport.dataMessages.loading.isLoading = false
+    dataMonthlyReport.dataMessages.loading = false
   }
-  dataMonthlyReport.dataMessages.loading.isLoading = false
+  dataMonthlyReport.dataMessages.loading = false
 }
 onMounted(() => {
   ListAnnualReport()
@@ -192,20 +225,22 @@ onMounted(() => {
       </div>
     </div>
   </div>
-
   <div class="row q-pa-md" style="padding-top: 10px">
     <div class="col-12 col-md-12">
       <q-card flat>
         <q-card-section>
           <div class="q-gutter-md row" align="right">
             <q-space />
+            <q-btn v-if="dataMonthlyReport.status === 'Fechado'" push :label="dataMonthlyReport.titles.openMonth" icon="drive_file_move" style="width: 200px;"
+              color="red-5" flat square @click="openMonth()" :disabled="dataMonthlyReport.selectedInitial.length === 0"/>
             <q-btn push :label="dataMonthlyReport.titles.buttonExport" icon="timeline" style="width: 200px;"
               color="green-5" flat square @click="downloadExcelComponent()" />
           </div>
+          
           <br>
-          <q-table flat :rows="dataResponse" :columns="columnsInitial" :rows-per-page-options="[0]"
-            :pagination=dataMonthlyReport.table.pagination :separator="dataMonthlyReport.table.separator"
-            :no-data-label="dataMonthlyReport.table.noData" bordered>
+          <q-table v-if="dataMonthlyReport.status === ''" flat :rows="dataResponse" :columns="columnsInitial"
+            :rows-per-page-options="[0]" :pagination=dataMonthlyReport.table.pagination
+            :separator="dataMonthlyReport.table.separator" :no-data-label="dataMonthlyReport.table.noData" bordered>
             <template v-slot:header="props">
               <q-tr
                 style="border-width: 1px;  border-style: outset;  border-color: var(--brand-primary);  border-collapse: separate;">
@@ -232,11 +267,50 @@ onMounted(() => {
               </q-tr>
             </template>
           </q-table>
+          <q-table v-if="dataMonthlyReport.status === 'Fechado'" flat :rows="dataResponse" :columns="columnsInitial"
+            :rows-per-page-options="[0]" :pagination=dataMonthlyReport.table.pagination
+            :separator="dataMonthlyReport.table.separator" :no-data-label="dataMonthlyReport.table.noData" bordered >
+            <template v-slot:header="props" >
+              <q-tr
+                style="border-width: 1px;  border-style: outset;  border-color: var(--brand-primary);  border-collapse: separate;">
+                <q-th colspan="2" v-for="header in dataMonthlyReport.headerTable"
+                  style="border-width: 1px;  border-style: outset;  border-color: var(--brand-primary);  border-collapse: separate;"
+                  :key="header">
+                  {{ header }}
+                </q-th>
+              </q-tr>
+              <q-th v-for="col in props.cols" :key="col.name" :props="props"
+                style="border-width: 1px;  border-style: outset;  border-color: var(--brand-primary);  border-collapse: separate;">
+                {{ col.label }}
+              </q-th>
+            </template>
+            <template v-slot:bottom-row>
+              <q-tr style="border-width: 1px;  border-style: outset;  border-color: var(--brand-primary);  border-collapse: separate; background-color: var(--brand-primary);
+  color: var(--brand-secondary);">
+                <q-td align="center">
+                  {{ dataMonthlyReport.titles.total }}
+                </q-td>
+                <q-td v-for="col in dataMonthlyReport.listTotal" :key="col" align="center">
+                  {{ col }}
+                </q-td>
+              </q-tr>
+            </template>
+
+            <template #body-cell-action="props" >
+              <q-td :props="props" >
+                <q-checkbox  v-model="dataMonthlyReport.selectedInitial" :val="props.row.id"
+										color="teal" v-if="props.row.id > 0">
+                    <q-tooltip anchor="center right" self="center left"
+                    :offset="[10, 10]">
+                    <strong>Não existem registos</strong>
+                  </q-tooltip>
+                  </q-checkbox>
+              </q-td>
+            </template>
+          </q-table>
         </q-card-section>
       </q-card>
     </div>
   </div>
-  <div v-if="dataMonthlyReport.dataMessages.loading.isLoading">
-    <messages :loading="dataMonthlyReport.dataMessages.loading"> </messages>
-  </div>
+  <messages :loading="dataMonthlyReport.dataMessages.loading"> </messages>
 </template>

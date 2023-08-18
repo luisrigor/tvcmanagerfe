@@ -11,5 +11,10 @@ class MonthlyReportApi {
         const url = 'tvc-manager/export-year-report?isOnlyYear=' + data.isOnlyYear + '&month=' + data.month + '&oidDealer=' + data.oidDealer + '&year=' + data.year
         return HttpService.downloadFile('GET', url, data)
     };
+    // http://localhost:8082/TVCManager/tvc-manager/close-month-prevision
+    public tvcCloseMonth = (data: any): Promise<string> => {
+        const url = 'tvc-manager/close-month-prevision'
+        return HttpService.put(url, data)
+    };
 }
 export default new MonthlyReportApi();

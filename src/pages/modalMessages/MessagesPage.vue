@@ -3,7 +3,7 @@ import { ref, toRef, watch } from 'vue'
 
 interface Props {
     loading: {
-        type: object,
+        type: boolean,
         default: false
     },
     confirmationData?: {
@@ -56,7 +56,7 @@ const updateStateConfirmationF = (selection: string, action: string) => {
 </script>
 <template>
     <div class="q-pa-md q-gutter-sm" style="max-width: 450px;">
-        <q-dialog v-model="loadingComponent.isLoading" persistent position="top">
+        <q-dialog v-model="loadingComponent" persistent position="top">
             <q-card style="max-width: 450px;top: 250px">
                 <q-card-section class="text-white q-py-md shadow-2">
                     Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia iusto porro, quod exercitationem magni

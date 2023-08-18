@@ -37,15 +37,10 @@ dataProvisionReport.dataSelectProvisionReport.month = dataOptionsStore.value.mon
         </span>
         <div class="bg-white q-pa-md example-row-column-width" >
             <div class="row text-h7" style="color:var(--brand-secondary)">
-                <div class="col-3">{{ dataProvisionReport.titles.dealer }}</div>
                 <div class="col-3">{{ dataProvisionReport.titles.year }}</div>
                 <div class="col-3">{{ dataProvisionReport.titles.month }}</div>
             </div>
             <div class="row">
-                <div class="col-3">
-                    <q-select style="width: 250px;" outlined v-model="dataProvisionReport.dataSelectProvisionReport.dealer"
-                    :label="dataProvisionReport.titles.labelDealer"  />
-                </div>
                 <div class="col-3">
                     <q-select style="width: 200px;" outlined v-model="dataProvisionReport.dataSelectProvisionReport.year"
                         :options="dataOptionsStore.dataSelect.years" :label="dataProvisionReport.titles.labelYear" />

@@ -23,7 +23,7 @@ const dataAnualReport = reactive({
     month: ''
   },
   dataMessages: {
-    loading: { isLoading: false }
+    loading: false
   },
   dataSendPrevisionSales: {
     year: '',
@@ -61,19 +61,19 @@ const ListAnnualReport = async () => {
   const headerTableTemp = dataAnualReport.headerTable[1].split(' ')
   dataAnualReport.headerTable[1] = headerTableTemp[0] + ' ' + dataAnualReport.dataSelectAnualReport.year
   try {
-    dataAnualReport.dataMessages.loading.isLoading = true
+    dataAnualReport.dataMessages.loading = true
     dataAnualReport.dataSendPrevisionSales.year = dataAnualReport.dataSelectAnualReport.year
     dataAnualReport.dataSendPrevisionSales.month = dataOptionsStore.value.dataSelect.months.indexOf(dataAnualReport.dataSelectAnualReport.month) + 1
     dataAnualReport.responsePrevisionSales = await AnnualReportApi.tvcPrevisionSales(dataAnualReport.dataSendPrevisionSales)
     await updateRows(dataAnualReport.responsePrevisionSales)
-    dataAnualReport.dataMessages.loading.isLoading = false
+    dataAnualReport.dataMessages.loading = false
   } catch (e: any) {
-    dataAnualReport.dataMessages.loading.isLoading = false
+    dataAnualReport.dataMessages.loading = false
     if (e.statusCode !== 200) {
       console.log('error->', e.statusCode)
     }
   } finally {
-    dataAnualReport.dataMessages.loading.isLoading = false
+    dataAnualReport.dataMessages.loading = false
   }
 }
 const updateRows = async (data: object) => {
@@ -140,7 +140,7 @@ const downloadExcelComponent = async () => {
   const indicatorsTemp = localStorage.getItem('indicators')
   const indicatorsTempOne = indicatorsTemp.split(',')
   dataAnualReport.dataSendExcel.data.oidDealer = indicatorsTempOne[1]
-  dataAnualReport.dataMessages.loading.isLoading = true
+  dataAnualReport.dataMessages.loading = true
   try {
     const res = await AnnualReportApi.downloadExcel(dataAnualReport.dataSendExcel.data)
     const blob = new Blob([res], { type: 'application/octet-stream' })
@@ -153,9 +153,9 @@ const downloadExcelComponent = async () => {
   } catch (e) {
     console.log('error', e)
   } finally {
-    dataAnualReport.dataMessages.loading.isLoading = false
+    dataAnualReport.dataMessages.loading = false
   }
-  dataAnualReport.dataMessages.loading.isLoading = false
+  dataAnualReport.dataMessages.loading = false
 }
 onMounted(() => {
   ListAnnualReport()
@@ -232,7 +232,5 @@ onMounted(() => {
       </q-card>
     </div>
   </div>
-  <div v-if="dataAnualReport.dataMessages.loading.isLoading">
-    <messages :loading="dataAnualReport.dataMessages.loading"> </messages>
-  </div>
+  <messages :loading="dataAnualReport.dataMessages.loading"> </messages>
 </template>
