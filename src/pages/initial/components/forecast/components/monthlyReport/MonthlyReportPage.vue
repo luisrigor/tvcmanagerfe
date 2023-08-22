@@ -68,21 +68,33 @@ const dataMonthlyReport = reactive({
   status: '',
   selectedInitial: []
 });
-const columnsInitial = [
+const columnsInitial = ref([
   { name: 'dealer', align: 'center', label: 'CONCESSÕES', field: 'dealer' },
   { name: 'oTuc', label: 'OBJETIVO TUC', field: 'oTuc' },
   { name: 'tuc', label: 'TUC', field: 'tuc' },
   { name: 'tcap', label: 'COMPRAS TCAP', field: 'tcap' },
   { name: 'tObj', label: 'TUC/OBJETIVO', field: 'tObj' },
   { name: 'cTcap', label: 'COMPRAS TCAP/TUC', field: 'cTcap' }
-];
+]);
 dataMonthlyReport.dataSelectMonthlyReport.year = dataOptionsStore.value.yearActual
 dataMonthlyReport.dataSelectMonthlyReport.month = dataOptionsStore.value.monthActual
 const dataResponse = ref([])
 const ListAnnualReport = async () => {
+  const dataHeaderTableTemp = ['Rede TUC', 'Previsão |', 'Cumprimento %']
+  const columnsInitialTemp = [
+    { name: 'dealer', align: 'center', label: 'CONCESSÕES', field: 'dealer' },
+    { name: 'oTuc', label: 'OBJETIVO TUC', field: 'oTuc' },
+    { name: 'tuc', label: 'TUC', field: 'tuc' },
+    { name: 'tcap', label: 'COMPRAS TCAP', field: 'tcap' },
+    { name: 'tObj', label: 'TUC/OBJETIVO', field: 'tObj' },
+    { name: 'cTcap', label: 'COMPRAS TCAP/TUC', field: 'cTcap' }
+  ]
   dataMonthlyReport.status = ''
+  dataMonthlyReport.headerTable = dataHeaderTableTemp
+  columnsInitial.value = columnsInitialTemp
   const headerTableTemp = dataMonthlyReport.headerTable[1].split(' ')
   dataMonthlyReport.headerTable[1] = headerTableTemp[0] + ' ' + dataMonthlyReport.dataSelectMonthlyReport.year
+
   try {
     dataMonthlyReport.dataMessages.loading = true
     dataMonthlyReport.dataSendMonthlyReport.year = dataMonthlyReport.dataSelectMonthlyReport.year
@@ -119,17 +131,20 @@ const updateRows = async (data: object) => {
 
         if (dataMont.numDealer === data['hstUsedCarsPrevisionSales'][propertyUP].oidDealer && data['hstUsedCarsPrevisionSales'][propertyUP].status === "Fechado") {
           dataMonthlyReport.status = data['hstUsedCarsPrevisionSales'][propertyUP].status
-          dataMont.id = data['hstUsedCarsPrevisionSales'][propertyUP].id
           dataMont.tuc = data['hstUsedCarsPrevisionSales'][propertyUP].previsionTvc !== 0 ? data['hstUsedCarsPrevisionSales'][propertyUP].previsionTvc : ''
           dataMont.tcap = data['hstUsedCarsPrevisionSales'][propertyUP].previsionSn !== 0 ? data['hstUsedCarsPrevisionSales'][propertyUP].previsionSn : ''
-          const obsjectAction = {
-            name: 'action',
-            align: 'center',
-            field: ''
+          if ((dataMonthlyReport.dataSelectMonthlyReport.year === dataOptionsStore.value.yearActual) &&
+            (dataMonthlyReport.dataSelectMonthlyReport.month === dataOptionsStore.value.monthActual)) {
+            dataMont.id = data['hstUsedCarsPrevisionSales'][propertyUP].id
+            const obsjectAction = {
+              name: 'action',
+              align: 'center',
+              field: ''
+            }
+            const headerTableAdd = 'Abrir Mês'
+            Array.prototype.push.call(columnsInitial.value, obsjectAction)
+            Array.prototype.push.call(dataMonthlyReport.headerTable, headerTableAdd)
           }
-          const headerTableAdd = 'Abrir Mês'
-          Array.prototype.push.call(columnsInitial, obsjectAction)
-          Array.prototype.push.call(dataMonthlyReport.headerTable, headerTableAdd)
         }
       }
     }
@@ -158,7 +173,8 @@ const listTotal = async () => {
     tObj: '',
     cTcap: '',
   }
-  if (dataMonthlyReport.status === 'Fechado') {
+  if (dataMonthlyReport.status === 'Fechado' && (dataMonthlyReport.dataSelectMonthlyReport.year === dataOptionsStore.value.yearActual) &&
+    (dataMonthlyReport.dataSelectMonthlyReport.month === dataOptionsStore.value.monthActual)) {
     dataTempTotal['add'] = ''
   }
   for (const propertyDR in dataResponse.value) {
@@ -166,7 +182,8 @@ const listTotal = async () => {
     dataTempTotal.tuc = dataResponse.value[propertyDR].tuc !== '' ? dataTempTotal.tuc + parseInt(dataResponse.value[propertyDR].tuc, 10) : dataTempTotal.tuc
     dataTempTotal.tcap = dataResponse.value[propertyDR].tcap !== '' ? dataTempTotal.tcap + parseInt(dataResponse.value[propertyDR].tcap, 10) : dataTempTotal.tcap
   }
-  dataTempTotal.cTcap = dataTempTotal.tcap !== 0 ? ((dataTempTotal.tcap * 100) / dataTempTotal.tuc).toFixed(2) + '%' : ''
+  dataTempTotal.tObj = dataTempTotal.tuc !== 0 && dataTempTotal.oTuc !== 0 ? ((dataTempTotal.tuc * 100) / dataTempTotal.oTuc).toFixed(2) + '%' : ''
+  dataTempTotal.cTcap = dataTempTotal.tcap !== 0 && dataTempTotal.tuc !== 0 ? ((dataTempTotal.tcap * 100) / dataTempTotal.tuc).toFixed(2) + '%' : ''
   for (const propertyDT in dataTempTotal) {
     Array.prototype.push.call(dataMonthlyReport.listTotal, dataTempTotal[propertyDT])
   }
@@ -188,8 +205,18 @@ const openMonth = async () => {
     dataMonthlyReport.dataMessages.loading = true
     await MonthlyReportApi.tvcCloseMonth(dataMonthlyReport.selectedInitial)
     dataMonthlyReport.dataMessages.loading = false
+    dataMonthlyReport.dataMessages.loading = false
+    dataMonthlyReport.dataMessages.confirmationModal.state = true
+    dataMonthlyReport.dataMessages.confirmationModal.dataModalAction.title = '¡Operação efectuada com sucesso!'
+    dataMonthlyReport.dataMessages.confirmationModal.dataModalAction.icon = 'check_circle_outline'
+    dataMonthlyReport.dataMessages.confirmationModal.dataModalAction.colorIcon = 'green'
   } catch (e: any) {
     dataMonthlyReport.dataMessages.loading = false
+    dataMonthlyReport.dataMessages.confirmationModal.state = true
+    dataMonthlyReport.dataMessages.confirmationModal.dataModalAction.title = 'Ocorreu um erro ao efetuar o pedido'
+    dataMonthlyReport.dataMessages.confirmationModal.dataModalAction.icon = 'close'
+    dataMonthlyReport.dataMessages.confirmationModal.dataModalAction.colorIcon = 'red'
+    console.log('error', e)
     if (e.statusCode !== 200) {
       console.log('error->', e.statusCode)
     }
@@ -271,9 +298,10 @@ onMounted(() => {
         <q-card-section>
           <div class="q-gutter-md row" align="right">
             <q-space />
-            <q-btn v-if="dataMonthlyReport.status === 'Fechado'" push :label="dataMonthlyReport.titles.openMonth"
-              icon="drive_file_move" style="width: 200px;" color="red-5" flat square @click="openMonthValidation()"
-              :disabled="dataMonthlyReport.selectedInitial.length === 0" />
+            <q-btn v-if="dataMonthlyReport.status === 'Fechado' && ((dataMonthlyReport.dataSelectMonthlyReport.year === dataOptionsStore.yearActual) &&
+              (dataMonthlyReport.dataSelectMonthlyReport.month === dataOptionsStore.monthActual))" push
+              :label="dataMonthlyReport.titles.openMonth" icon="drive_file_move" style="width: 200px;" color="red-5" flat
+              square @click="openMonthValidation()" :disabled="dataMonthlyReport.selectedInitial.length === 0" />
             <q-btn push :label="dataMonthlyReport.titles.buttonExport" icon="timeline" style="width: 200px;"
               color="green-5" flat square @click="downloadExcelComponent()" />
           </div>
