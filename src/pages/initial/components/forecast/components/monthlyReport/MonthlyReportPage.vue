@@ -31,7 +31,25 @@ const dataMonthlyReport = reactive({
   },
   headerTable: ['Rede TUC', 'Previsão |', 'Cumprimento %'],
   dataMessages: {
-    loading: false
+    loading: false,
+    confirmationData: {
+      state: false,
+      dataModalAction: {
+        title: '',
+        icon: '',
+        colorIcon: '',
+        action: ''
+      }
+    },
+    confirmationModal: {
+      state: false,
+      dataModalAction: {
+        title: '',
+        data: '',
+        icon: '',
+        colorIcon: ''
+      }
+    }
   },
   table: {
     pagination: { rowsPerPage: 0 },
@@ -100,8 +118,8 @@ const updateRows = async (data: object) => {
       for (const propertyUP in data['hstUsedCarsPrevisionSales']) {
 
         if (dataMont.numDealer === data['hstUsedCarsPrevisionSales'][propertyUP].oidDealer && data['hstUsedCarsPrevisionSales'][propertyUP].status === "Fechado") {
-          dataMonthlyReport.status = data['hstUsedCarsPrevisionSales'][propertyUP].status 
-          dataMont.id = data['hstUsedCarsPrevisionSales'][propertyUP].id 
+          dataMonthlyReport.status = data['hstUsedCarsPrevisionSales'][propertyUP].status
+          dataMont.id = data['hstUsedCarsPrevisionSales'][propertyUP].id
           dataMont.tuc = data['hstUsedCarsPrevisionSales'][propertyUP].previsionTvc !== 0 ? data['hstUsedCarsPrevisionSales'][propertyUP].previsionTvc : ''
           dataMont.tcap = data['hstUsedCarsPrevisionSales'][propertyUP].previsionSn !== 0 ? data['hstUsedCarsPrevisionSales'][propertyUP].previsionSn : ''
           const obsjectAction = {
@@ -153,6 +171,18 @@ const listTotal = async () => {
     Array.prototype.push.call(dataMonthlyReport.listTotal, dataTempTotal[propertyDT])
   }
 }
+const openMonthValidation = async () => {
+
+  try {
+    dataMonthlyReport.dataMessages.confirmationData.state = true
+    dataMonthlyReport.dataMessages.confirmationData.dataModalAction.title = 'Confirma abertura do mês?'
+    dataMonthlyReport.dataMessages.confirmationData.dataModalAction.icon = 'outbound'
+    dataMonthlyReport.dataMessages.confirmationData.dataModalAction.colorIcon = 'blue'
+    dataMonthlyReport.dataMessages.confirmationData.dataModalAction.action = 'send'
+  } catch (e) {
+    console.log('error', e)
+  }
+}
 const openMonth = async () => {
   try {
     dataMonthlyReport.dataMessages.loading = true
@@ -168,6 +198,16 @@ const openMonth = async () => {
     await ListAnnualReport()
   }
   dataMonthlyReport.dataMessages.loading = false
+}
+const updateStateConfirmationBudget = async (data: object) => {
+  if (data.selectionSend === 'close') {
+    dataMonthlyReport.dataMessages.confirmationData.state = false
+  } else if (data.selectionSend === 'success') {
+    dataMonthlyReport.dataMessages.confirmationModal.state = false
+  } else if (data.selectionSend === 'check') {
+    dataMonthlyReport.dataMessages.confirmationData.state = false
+    openMonth()
+  }
 }
 const downloadExcelComponent = async () => {
   dataMonthlyReport.dataSendExcel.data.year = parseInt(dataMonthlyReport.dataSelectMonthlyReport.year, 10)
@@ -231,12 +271,13 @@ onMounted(() => {
         <q-card-section>
           <div class="q-gutter-md row" align="right">
             <q-space />
-            <q-btn v-if="dataMonthlyReport.status === 'Fechado'" push :label="dataMonthlyReport.titles.openMonth" icon="drive_file_move" style="width: 200px;"
-              color="red-5" flat square @click="openMonth()" :disabled="dataMonthlyReport.selectedInitial.length === 0"/>
+            <q-btn v-if="dataMonthlyReport.status === 'Fechado'" push :label="dataMonthlyReport.titles.openMonth"
+              icon="drive_file_move" style="width: 200px;" color="red-5" flat square @click="openMonthValidation()"
+              :disabled="dataMonthlyReport.selectedInitial.length === 0" />
             <q-btn push :label="dataMonthlyReport.titles.buttonExport" icon="timeline" style="width: 200px;"
               color="green-5" flat square @click="downloadExcelComponent()" />
           </div>
-          
+
           <br>
           <q-table v-if="dataMonthlyReport.status === ''" flat :rows="dataResponse" :columns="columnsInitial"
             :rows-per-page-options="[0]" :pagination=dataMonthlyReport.table.pagination
@@ -269,8 +310,8 @@ onMounted(() => {
           </q-table>
           <q-table v-if="dataMonthlyReport.status === 'Fechado'" flat :rows="dataResponse" :columns="columnsInitial"
             :rows-per-page-options="[0]" :pagination=dataMonthlyReport.table.pagination
-            :separator="dataMonthlyReport.table.separator" :no-data-label="dataMonthlyReport.table.noData" bordered >
-            <template v-slot:header="props" >
+            :separator="dataMonthlyReport.table.separator" :no-data-label="dataMonthlyReport.table.noData" bordered>
+            <template v-slot:header="props">
               <q-tr
                 style="border-width: 1px;  border-style: outset;  border-color: var(--brand-primary);  border-collapse: separate;">
                 <q-th colspan="2" v-for="header in dataMonthlyReport.headerTable"
@@ -296,15 +337,14 @@ onMounted(() => {
               </q-tr>
             </template>
 
-            <template #body-cell-action="props" >
-              <q-td :props="props" >
-                <q-checkbox  v-model="dataMonthlyReport.selectedInitial" :val="props.row.id"
-										color="teal" v-if="props.row.id > 0">
-                    <q-tooltip anchor="center right" self="center left"
-                    :offset="[10, 10]">
+            <template #body-cell-action="props">
+              <q-td :props="props">
+                <q-checkbox v-model="dataMonthlyReport.selectedInitial" :val="props.row.id" color="teal"
+                  v-if="props.row.id > 0">
+                  <q-tooltip anchor="center right" self="center left" :offset="[10, 10]">
                     <strong>Não existem registos</strong>
                   </q-tooltip>
-                  </q-checkbox>
+                </q-checkbox>
               </q-td>
             </template>
           </q-table>
@@ -312,5 +352,8 @@ onMounted(() => {
       </q-card>
     </div>
   </div>
-  <messages :loading="dataMonthlyReport.dataMessages.loading"> </messages>
+  <messages :loading="dataMonthlyReport.dataMessages.loading"
+    :confirmationData="dataMonthlyReport.dataMessages.confirmationData"
+    :confirmationModal="dataMonthlyReport.dataMessages.confirmationModal"
+    @update-state-confirmation="updateStateConfirmationBudget"> </messages>
 </template>
