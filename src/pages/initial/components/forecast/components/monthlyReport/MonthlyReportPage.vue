@@ -300,10 +300,10 @@ onMounted(() => {
             <q-space />
             <q-btn v-if="dataMonthlyReport.status === 'Fechado' && ((dataMonthlyReport.dataSelectMonthlyReport.year === dataOptionsStore.yearActual) &&
               (dataMonthlyReport.dataSelectMonthlyReport.month === dataOptionsStore.monthActual))" push
-              :label="dataMonthlyReport.titles.openMonth" icon="drive_file_move" style="width: 200px;" color="red-5" flat
-              square @click="openMonthValidation()" :disabled="dataMonthlyReport.selectedInitial.length === 0" />
-            <q-btn push :label="dataMonthlyReport.titles.buttonExport" icon="timeline" style="width: 200px;"
-              color="green-5" flat square @click="downloadExcelComponent()" />
+              :label="dataMonthlyReport.titles.openMonth" icon="drive_file_move" style="width: 200px; box-shadow:0 1px 5px #0003, 0 2px 2px #00000024, 0 3px 1px -2px #0000001f" color="red-5" flat
+               @click="openMonthValidation()" :disabled="dataMonthlyReport.selectedInitial.length === 0" />
+            <q-btn push :label="dataMonthlyReport.titles.buttonExport" icon="timeline" style="width: 200px; box-shadow:0 1px 5px #0003, 0 2px 2px #00000024, 0 3px 1px -2px #0000001f"
+              color="green-5" flat  @click="downloadExcelComponent()" />
           </div>
 
           <br>

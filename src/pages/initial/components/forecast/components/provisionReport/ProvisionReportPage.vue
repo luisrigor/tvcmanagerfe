@@ -6,7 +6,6 @@ import { useDataOptions } from '../../../../../../shared/store/modules/data-opti
 import diskImg from 'src/assets/images/disk.png'
 import Messages from '../../../../../modalMessages/MessagesPage.vue'
 import ProvisionReportApi from './ProvisionReportApi';
-import MonthlyReportApi from '../monthlyReport/MonthlyReportApi';
 
 const dataOptions = useDataOptions();
 const { dataOptionsStore } = storeToRefs(dataOptions);
@@ -208,19 +207,20 @@ const updateRows = async (data: object) => {
 const saveReport = async (status: string) => {
   dataProvisionReport.dataSendSavePrevisionSalesDealer.status = status
   dataProvisionReport.dataSendSavePrevisionSalesDealer.previsionSn = typeof dataProvisionReport.dataSendSavePrevisionSalesDealer.previsionSn === "string" ? parseInt(dataProvisionReport.dataSendSavePrevisionSalesDealer.previsionSn, 10) : dataProvisionReport.dataSendSavePrevisionSalesDealer.previsionSn
-  dataProvisionReport.dataSendSavePrevisionSalesDealer.previsionTvc = typeof dataProvisionReport.dataSendSavePrevisionSalesDealer.previsionTvc ? parseInt(dataProvisionReport.dataSendSavePrevisionSalesDealer.previsionTvc, 10) : dataProvisionReport.dataSendSavePrevisionSalesDealer.previsionTvc
-  
-  try {
-    dataProvisionReport.dataMessages.loading = true
-    await ProvisionReportApi.tvcSave(dataProvisionReport.dataSendSavePrevisionSalesDealer)
-  } catch (e: any) {
-    dataProvisionReport.dataMessages.loading = false
-    if (e.statusCode !== 200) {
-      console.log('error->', e.statusCode)
+  dataProvisionReport.dataSendSavePrevisionSalesDealer.previsionTvc = typeof dataProvisionReport.dataSendSavePrevisionSalesDealer.previsionTvc === "string" ? parseInt(dataProvisionReport.dataSendSavePrevisionSalesDealer.previsionTvc, 10) : dataProvisionReport.dataSendSavePrevisionSalesDealer.previsionTvc
+  if (dataProvisionReport.dataSendSavePrevisionSalesDealer.previsionSn > 0 && dataProvisionReport.dataSendSavePrevisionSalesDealer.previsionTvc > 0) {
+    try {
+      dataProvisionReport.dataMessages.loading = true
+      await ProvisionReportApi.tvcSave(dataProvisionReport.dataSendSavePrevisionSalesDealer)
+    } catch (e: any) {
+      dataProvisionReport.dataMessages.loading = false
+      if (e.statusCode !== 200) {
+        console.log('error->', e.statusCode)
+      }
+    } finally {
+      dataProvisionReport.dataMessages.loading = false
+      await ListPrevisionSales()
     }
-  } finally {
-    dataProvisionReport.dataMessages.loading = false
-    await ListPrevisionSales()
   }
 }
 const updatePercentageDealer = async () => {
